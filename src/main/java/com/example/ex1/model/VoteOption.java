@@ -9,7 +9,8 @@ public class VoteOption {
     public ArrayList<Integer> voteId;
 
 
-    public VoteOption(String caption, int presentationOrder, ArrayList<Integer> voteId) {
+    public VoteOption(int pollId, String caption, int presentationOrder, ArrayList<Integer> voteId) {
+        this.pollId = pollId;
         this.caption = caption;
         this.presentationOrder = presentationOrder;
         this.voteId = voteId;

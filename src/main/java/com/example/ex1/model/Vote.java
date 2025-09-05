@@ -8,7 +8,7 @@ public class Vote {
     public int userId;
     public int voteOptionID;
 
-    public Vote(int voteID, Instant publishedAt, int userID, int voteOptionID){
+    public Vote(int userID, int voteID, int voteOptionID, Instant publishedAt){
         this.publishedAt = publishedAt;
         this.userId = userID;
         this.voteOptionID = voteOptionID;
