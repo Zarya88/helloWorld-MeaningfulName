@@ -1,11 +1,14 @@
-package com.example.ex1;
+package com.example.ex1.model;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
 
 public class User {
     public int userId;
     public String username;
+    public String password;
     public String email;
+    public ArrayList<Poll> polls;
+    //list of polls created by user
 
     public User(int userId, String username, String email) {
         this.userId = userId;

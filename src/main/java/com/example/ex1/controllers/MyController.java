@@ -1,6 +1,4 @@
-package com.example.ex1;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+package com.example.ex1.controllers;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
