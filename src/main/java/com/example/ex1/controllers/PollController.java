@@ -15,7 +15,7 @@ public class PollController {
 
     @PostMapping("/poll/create")
     public Poll createPoll(@RequestBody CreatePollRequest r) {
-        return manager.createPoll(r.userID, r.question, r.publishedAt, r.validUntil);
+        return manager.createPoll(r.userID, r.question, r.publishedAt, r.validUntil, r.options);
     }
 
     @GetMapping("/poll/all")

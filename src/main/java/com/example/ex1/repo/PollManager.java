@@ -17,7 +17,7 @@ public class PollManager {
     public int voteCounter;
     public HashMap<Integer, User> listVotes  = new HashMap<>();
     public int voteOptionCounter;
-    public HashMap<Integer, Poll> listVoteOptions  = new HashMap<>();
+    public HashMap<Integer, VoteOption> listVoteOptions  = new HashMap<>();
 
     public PollManager() {
         this.userCounter = 1;
@@ -47,27 +47,26 @@ public class PollManager {
     }
 
     //POLLS
-    public Poll createPoll(int userId, String question, Instant publishedAt, Instant validUntil, ArrayList<String> options) {
-        Poll poll = new Poll(pollCounter, userId, question, publishedAt, validUntil);
+    public Poll createPoll(int userId, String question, Instant publishedAt, Instant validUntil, List<String> options) {
+        ArrayList<Integer> voteOptions = new ArrayList<>();
+        Poll poll = new Poll(pollCounter, userId, question, publishedAt, validUntil, voteOptions);
         listPolls.put(userId, poll);
 
-        ArrayList<VoteOption> voteOptions = new ArrayList<>();
 
         //listVoteOptions
         //create VoteOptions - you could use a for loop but IDs work
         for (int i = 0; i < options.size(); i++) {
-            voteOptions.add(new VoteOption(voteOptionCounter, options.get(i), i, new ArrayList<Integer>()));
+            listVoteOptions.put(voteOptionCounter, new VoteOption(voteOptionCounter, options.get(i), i, new ArrayList<Integer>()));
+            voteOptions.add(voteOptionCounter);
+            this.voteOptionCounter++;
         }
         this.pollCounter++;
-        this.voteOptionCounter++;
         return poll;
     }
 
     public List<Poll> getPolls() {
         return listPolls.values().stream().toList();
     }
-
-    //TODO: public getPoll()
 
     public void deletePoll(int pollId) {
         listPolls.remove(pollId);
