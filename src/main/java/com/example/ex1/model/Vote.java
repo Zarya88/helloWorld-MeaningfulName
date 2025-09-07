@@ -13,4 +13,5 @@ public class Vote {
         this.userId = userID;
         this.voteOptionID = voteOptionID;
     }
+
 }

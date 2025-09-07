@@ -15,7 +15,7 @@ public class PollManager {
     public int pollCounter;
     public HashMap<Integer, Poll> listPolls  = new HashMap<>();
     public int voteCounter;
-    public HashMap<Integer, User> listVotes  = new HashMap<>();
+    public HashMap<Integer, Vote> listVotes  = new HashMap<>();
     public int voteOptionCounter;
     public HashMap<Integer, VoteOption> listVoteOptions  = new HashMap<>();
 
@@ -73,13 +73,26 @@ public class PollManager {
     }
 
     //Votes
-    public void createVote(int userId, int voteOptID, Instant publishedAt) {
+    public Vote createVote(int userId, int voteOptID, Instant publishedAt) {
         Vote vote = new Vote(userId, this.voteCounter, voteOptID, publishedAt);
         this.voteCounter++;
+        return vote;
     }
 
-    public void replaceVote() {
-        //TODO: replace Vote
+    public Vote replaceVote(int userId, int voteOptID, Instant publishedAt) {
+        for (Vote v : listVotes.values()){
+            if (userId == v.userId) {
+                Vote vote = new Vote(userId, v.voteID, voteOptID, publishedAt);
+                return vote;
+            }
+        }
+        return null;
     }
+
+    public HashMap<Integer, Vote> showAllVotes(){
+        return listVotes;
+    }
+
+
 
 }
