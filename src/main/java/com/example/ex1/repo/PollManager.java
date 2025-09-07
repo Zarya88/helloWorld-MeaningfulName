@@ -75,6 +75,7 @@ public class PollManager {
     //Votes
     public Vote createVote(int userId, int voteOptID, Instant publishedAt) {
         Vote vote = new Vote(userId, this.voteCounter, voteOptID, publishedAt);
+        listVotes.put(this.voteCounter, vote);
         this.voteCounter++;
         return vote;
     }
@@ -83,14 +84,15 @@ public class PollManager {
         for (Vote v : listVotes.values()){
             if (userId == v.userId) {
                 Vote vote = new Vote(userId, v.voteID, voteOptID, publishedAt);
+                listVotes.replace(v.voteID, vote);
                 return vote;
             }
         }
         return null;
     }
 
-    public HashMap<Integer, Vote> showAllVotes(){
-        return listVotes;
+    public List<Vote> showAllVotes(){
+        return listVotes.values().stream().toList();
     }
 
 

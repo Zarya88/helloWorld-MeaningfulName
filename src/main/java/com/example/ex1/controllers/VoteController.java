@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 public class VoteController {
@@ -28,7 +29,7 @@ public class VoteController {
     }
 
     @GetMapping("/vote/all")
-    public HashMap<Integer, Vote> showAllVotes() {
+    public List<Vote> showAllVotes() {
         return manager.showAllVotes();
     }
 }

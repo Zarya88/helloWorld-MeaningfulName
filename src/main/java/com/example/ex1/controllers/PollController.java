@@ -28,6 +28,5 @@ public class PollController {
         manager.deletePoll(pollId);
     }
 
-    //createuserrequest and stuff
 
 }

@@ -9,9 +9,11 @@ public class Vote {
     public int voteOptionID;
 
     public Vote(int userID, int voteID, int voteOptionID, Instant publishedAt){
-        this.publishedAt = publishedAt;
         this.userId = userID;
+        this.voteID  = voteID;
         this.voteOptionID = voteOptionID;
+        this.publishedAt = publishedAt;
+
     }
 
 }
