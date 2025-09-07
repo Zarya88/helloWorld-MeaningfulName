@@ -16,8 +16,7 @@ WHAT WORKS CURRENTLY:
 - User 2 changes his vote
 - List votes (-> empty)
 - Delete the one poll
-WHAT SHOULD WORK BUT HAS NOT BEEN TESTED:
-- List votes (-> shows the most recent vote for User 2)
 
 WHAT OUR DEVELOPERS (me) ARE STILL WORKING ON:
-- testing
+- List votes (-> shows the most recent vote for User 2) : currently showing all votes that has been submited
+- auto testing: currently only able to test 1) if new user is creatable and 2) method "showUsers"
