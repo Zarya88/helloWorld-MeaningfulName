@@ -1,5 +1,5 @@
-I devided the code into 4 depositories:
-  controllers, dto, models and "repo".
+I devided the code into 4 depositories: controllers, dto, models and "repo".
+
 Under "repo" you can find the main manager for the poll. Here lies all out ugly truths, most of our backend data, our most useful functions and probably a forgotten ";" somewhere.
 Under "model" you will find User, Poll, Vote and VoteOptions - and yes you guessed it, they are responsible for the model of different objects we are using.
 Under "controllers" you will find the controllers, responsible for all your RESTful web services.
