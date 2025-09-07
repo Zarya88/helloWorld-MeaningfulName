@@ -5,20 +5,20 @@ I devided the code into 4 depositories: controllers, dto, models and "repo".
 - Under "controllers" you will find the controllers, responsible for all your RESTful web services.
 - And "dto" is there to look pretty. No, literally, esier to see what data we are working with this way.
 
-WHAH WORKS CURRENTLY:
+WHAT WORKS CURRENTLY:
 - Create a new user
 - List all users (-> shows the newly created user)
 - Create another user
 - List all users again (-> shows two users)
 - User 1 creates a new poll
 - List polls (-> shows the new poll)
-
-WHAT SHOULD WORK BUT HAS NOT BEEN TESTED:
 - User 2 votes on the poll
 - User 2 changes his vote
+- List votes (-> empty)
+- 
+WHAT SHOULD WORK BUT HAS NOT BEEN TESTED:
 - List votes (-> shows the most recent vote for User 2)
 - Delete the one poll
-- List votes (-> empty)
 
 WHAT OUR DEVELOPERS (me) ARE STILL WORKING ON:
 - testing
