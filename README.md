@@ -15,10 +15,9 @@ WHAT WORKS CURRENTLY:
 - User 2 votes on the poll
 - User 2 changes his vote
 - List votes (-> empty)
-- 
+- Delete the one poll
 WHAT SHOULD WORK BUT HAS NOT BEEN TESTED:
 - List votes (-> shows the most recent vote for User 2)
-- Delete the one poll
 
 WHAT OUR DEVELOPERS (me) ARE STILL WORKING ON:
 - testing
