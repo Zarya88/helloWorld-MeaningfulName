@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 @RestController
+@CrossOrigin
 public class UserController {
     private final PollManager manager;
 

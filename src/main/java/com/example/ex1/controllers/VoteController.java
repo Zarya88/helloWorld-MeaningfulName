@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 public class VoteController {
     private final PollManager manager;
 

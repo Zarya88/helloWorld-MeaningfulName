@@ -2,6 +2,7 @@ package com.example.ex1.controllers;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin
 public class MyController {
         @GetMapping("/hello") //fetch
         public String hello(@RequestParam(value = "name", defaultValue = "World") String name) {
