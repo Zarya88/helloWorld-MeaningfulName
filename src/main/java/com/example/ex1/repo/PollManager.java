@@ -50,7 +50,7 @@ public class PollManager {
     public Poll createPoll(int userId, String question, Instant publishedAt, Instant validUntil, List<String> options) {
         ArrayList<Integer> voteOptions = new ArrayList<>();
         Poll poll = new Poll(pollCounter, userId, question, publishedAt, validUntil, voteOptions);
-        listPolls.put(userId, poll);
+        listPolls.put(pollCounter, poll);
 
 
         //listVoteOptions

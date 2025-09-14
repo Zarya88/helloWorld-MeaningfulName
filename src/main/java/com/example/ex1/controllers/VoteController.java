@@ -19,7 +19,7 @@ public class VoteController {
         this.manager = new PollManager();
     }
 
-    @PostMapping("/vote")
+    @PostMapping("/poll/{id}/vote")
     public Vote createVote(@RequestBody SubmitVoteRequest r) {
         return manager.createVote(r.userId, r.voteOptionID, r.publishedAt);
     }
