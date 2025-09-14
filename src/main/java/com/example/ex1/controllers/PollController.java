@@ -8,14 +8,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
-@RestController
+
 @CrossOrigin
+@RestController
 public class PollController {
     private final PollManager manager;
 
-    public PollController() {
-        this.manager = new PollManager();
+    public PollController(PollManager manager) {
+        this.manager = manager;
     }
 
     @PostMapping("/poll/create")
@@ -38,13 +40,10 @@ public class PollController {
     }*/
 
     @GetMapping("/poll/{pollId}")
-    public java.util.Map<String, Object> getPoll(@PathVariable int pollId) {
+    public Map<String, Object> getPoll(@PathVariable int pollId) {
         var view = manager.pollView(pollId);
-        if (view == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.NOT_FOUND, "Poll not found");
-        }
-        return view; // Spring converts Map -> JSON
+        if (view == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found");
+        return view;
     }
 
     @DeleteMapping("/poll/{pollId}")

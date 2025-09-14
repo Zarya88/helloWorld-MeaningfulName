@@ -149,6 +149,7 @@
 
 
     // cast a vote
+    /*
     async function vote(optionId, direction = "up") {
         try {
             if (!user?.userId) {
@@ -191,9 +192,39 @@
             if (pollData && pollData.id) loadPoll(pollData.id);
         }
     }
+    */
+    async function vote(optionId) {
+        try {
+            const res = await fetch(`http://localhost:8080/poll/${pollData.id}/vote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: user.userId,
+                    voteOptionID: optionId,
+                    publishedAt: new Date().toISOString()
+                })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            // server returns updated poll view -> overwrite to bump counts
+            pollData = await res.json();
+
+            // remember my choice locally (optional)
+            myChoice = optionId;
+            myVotes  = { ...myVotes, [pollData.id]: optionId };
+            saveUserVotes(user.userId, myVotes);
+        } catch (e) {
+            alert(e.message || "Vote failed");
+        }
+        console.log("POST", `http://localhost:8080/poll/${pollData.id}/vote`, {
+            userId: user.userId,
+            voteOptionID: optionId
+        });
+    }
+
 
     async function changeVote(newOptionId) {
-        await vote(newOptionId, "up");
+        await vote(newOptionId);
     }
 
     function goCreate() { currentPage = "createUser"; }
@@ -281,8 +312,8 @@
                 {#each pollData.options as opt}
                     <div class="option">
                         <div>{opt.text}</div>
-                        <button class="btn-up" onclick={() => vote(opt.id, "up")}>upvote</button>
-                        <button class="btn-down" onclick={() => vote(opt.id, "down")}>downvote</button>
+                        <button class="btn-up" onclick={() => vote(opt.id)}>upvote</button>
+                        <button class="btn-down" onclick={() => vote(opt.id)}>downvote</button>
                         <div class="counter">{opt.votes ?? 0} Votes</div>
                     </div>
                 {/each}
@@ -308,7 +339,7 @@
         {:else if voteError}
             <p class="err">{voteError}</p>
         {:else if pollData}
-            <div class="panel">http://localhost:8080/poll/${pollData.id}/vote
+            <div class="panel"><!--http://localhost:8080/poll/${pollData.id}/vote-->
                 <div class="question"><em>"{pollData.question}"</em></div>
 
                 {#each pollData.options as opt}
@@ -318,7 +349,7 @@
                         <!-- Block another vote if I already chose a different option -->
                         <button class="btn-up"
                                 disabled={voteSending || (!!myChoice && myChoice !== opt.id)}
-                                onclick={() => vote(opt.id, "up")}>
+                                onclick={() => vote(opt.id)}>
                             {myChoice === opt.id ? "voted" : "vote"}
                         </button>
 
@@ -339,6 +370,8 @@
 
         <button class="blue-button outline" onclick={() => currentPage = "home"}>← Back to Home</button>
     {/if}
+
+
 
 
 

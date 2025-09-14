@@ -3,12 +3,15 @@ import com.example.ex1.model.Poll;
 import com.example.ex1.model.User;
 import com.example.ex1.model.Vote;
 import com.example.ex1.model.VoteOption;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Service
 public class PollManager {
     public int userCounter;
     public HashMap<Integer, User> listUsers  = new HashMap<>();
@@ -95,34 +98,34 @@ public class PollManager {
         return listVotes.values().stream().toList();
     }
 
-    // Build a poll JSON view like:
-// { id, question, options: [ { id, text, votes }, ... ] }
-    public java.util.Map<String, Object> pollView(int pollId) {
+
+    public Map<String, Object> pollView(int pollId) {
         var p = listPolls.get(pollId);
         if (p == null) return null;
 
-        var options = new java.util.ArrayList<java.util.Map<String, Object>>();
+        var options = new ArrayList<Map<String, Object>>();
         for (Integer optId : p.options) {
             var vo = listVoteOptions.get(optId);
             if (vo == null) continue;
 
             long votes = listVotes.values().stream()
-                    .filter(v -> v.voteOptionID == optId)
+                    .filter(v -> v.voteOptionID == optId)   // adapt field name if needed
                     .count();
 
-            var o = new java.util.HashMap<String, Object>();
+            var o = new HashMap<String, Object>();
             o.put("id",    vo.voteOptionID);
             o.put("text",  vo.caption);
             o.put("votes", votes);
             options.add(o);
         }
 
-        var out = new java.util.HashMap<String, Object>();
-        out.put("id",        p.pollID);
-        out.put("question",  p.question);
-        out.put("options",   options);
+        var out = new HashMap<String, Object>();
+        out.put("id",       p.pollID);
+        out.put("question", p.question);
+        out.put("options",  options);
         return out;
     }
+
 
 
 
