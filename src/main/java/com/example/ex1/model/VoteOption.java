@@ -7,6 +7,7 @@ public class VoteOption {
     public String caption;
     public int presentationOrder;
     public ArrayList<Integer> voteId;
+    public int voteOptionID;
 
 
     public VoteOption(int pollId, String caption, int presentationOrder, ArrayList<Integer> voteId) {

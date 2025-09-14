@@ -148,7 +148,7 @@
 
 
 
-    // cast a vote (adjust URL/body to match your backend)
+    // cast a vote
     async function vote(optionId, direction = "up") {
         try {
             if (!user?.userId) {
@@ -170,12 +170,15 @@
             const res = await fetch(`http://localhost:8080/poll/${pollData.id}/vote`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ optionId, direction, userId: user.userId }) // include userId if your API needs it
+                body: JSON.stringify({
+                    userId: user.userId,
+                    voteOptionID: optionId,
+                    publishedAt: new Date().toISOString()
+                })
             });
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            // optionally sync with server response if backend returns updated poll
             pollData = await res.json();
 
             myChoice = optionId;
@@ -184,13 +187,12 @@
 
         } catch (e) {
             alert(e.message || "Vote failed");
-            // reload from server if we had a local optimistic update that might be wrong
+            // reload from server
             if (pollData && pollData.id) loadPoll(pollData.id);
         }
     }
 
     async function changeVote(newOptionId) {
-        // simplest: just call vote again with the new option
         await vote(newOptionId, "up");
     }
 

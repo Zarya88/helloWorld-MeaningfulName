@@ -8,3 +8,4 @@ public class SubmitVoteRequest {
     public int userId;
     public int voteOptionID;
 }
+

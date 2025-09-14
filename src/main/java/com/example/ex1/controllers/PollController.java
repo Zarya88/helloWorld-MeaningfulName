@@ -1,5 +1,6 @@
 package com.example.ex1.controllers;
 import com.example.ex1.dto.CreatePollRequest;
+import com.example.ex1.dto.PollDto;
 import com.example.ex1.model.Poll;
 import com.example.ex1.repo.PollManager;
 import org.springframework.http.HttpStatus;
@@ -27,13 +28,23 @@ public class PollController {
         return manager.getPolls();
     }
 
-    @GetMapping("/poll/{pollId}")
+    /*@GetMapping("/poll/{pollId}")
     public Poll getPoll(@PathVariable int pollId) {
         Poll p = manager.listPolls.get(pollId);
         if (p == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found");
         }
         return p;
+    }*/
+
+    @GetMapping("/poll/{pollId}")
+    public java.util.Map<String, Object> getPoll(@PathVariable int pollId) {
+        var view = manager.pollView(pollId);
+        if (view == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Poll not found");
+        }
+        return view; // Spring converts Map -> JSON
     }
 
     @DeleteMapping("/poll/{pollId}")
