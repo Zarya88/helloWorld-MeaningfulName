@@ -135,6 +135,13 @@
             if (!text) throw new Error("Poll not found or empty response.");
             pollData = JSON.parse(text);
 
+            pollData.id = Number(pollData.id);
+            pollData.options = (pollData.options || []).map(o => ({
+                id: Number(o.id),                     // <- ensures numbers, not undefined/strings
+                text: String(o.text ?? ""),
+                votes: Number(o.votes ?? 0)
+            }));
+
             myChoice = myVotes[pollData.id] ?? null;
 
         } catch (e) {
@@ -146,81 +153,62 @@
         }
     }
 
-
-
     // cast a vote
-    /*
-    async function vote(optionId, direction = "up") {
-        try {
-            if (!user?.userId) {
-                voteError = "Create a user (or log in) before voting.";
-                return;
-            }
-            // optimistic UI update
-            const idx = pollData.options.findIndex(o => o.id === optionId);
-            if (idx !== -1) {
-                const delta = direction === "up" ? 1 : -1;
-                pollData = {
-                    ...pollData,
-                    options: pollData.options.map(o =>
-                        o.id === optionId ? { ...o, votes: (o.votes ?? 0) + delta } : o
-                    )
-                };
-            }
-
-            const res = await fetch(`http://localhost:8080/poll/${pollData.id}/vote`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: user.userId,
-                    voteOptionID: optionId,
-                    publishedAt: new Date().toISOString()
-                })
-            });
-
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            pollData = await res.json();
-
-            myChoice = optionId;
-            myVotes = { ...myVotes, [pollData.id]: optionId };
-            saveUserVotes(user.userId, myVotes);
-
-        } catch (e) {
-            alert(e.message || "Vote failed");
-            // reload from server
-            if (pollData && pollData.id) loadPoll(pollData.id);
-        }
-    }
-    */
     async function vote(optionId) {
+        // sanity checks
+        if (!user?.userId) {
+            voteError = "Create a user (or log in) before voting.";
+            return;
+        }
+        if (optionId == null || Number.isNaN(Number(optionId))) {
+            alert("Bad option id");
+            return;
+        }
+
         try {
+            voteSending = true;
             const res = await fetch(`http://localhost:8080/poll/${pollData.id}/vote`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     userId: user.userId,
-                    voteOptionID: optionId,
+                    voteOptionID: Number(optionId),
                     publishedAt: new Date().toISOString()
                 })
             });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            // server returns updated poll view -> overwrite to bump counts
-            pollData = await res.json();
+            if (!res.ok) {
+                const txt = await res.text().catch(() => "");
+                throw new Error(`HTTP ${res.status} ${txt}`);
+            }
 
-            // remember my choice locally (optional)
-            myChoice = optionId;
-            myVotes  = { ...myVotes, [pollData.id]: optionId };
+            // server returns updated poll snapshot -> replace to update counts
+            const updated = await res.json();
+            // normalize again (defensive)
+            updated.id = Number(updated.id);
+            updated.options = (updated.options || []).map(o => ({
+                id: Number(o.id),
+                text: String(o.text ?? ""),
+                votes: Number(o.votes ?? 0)
+            }));
+            pollData = updated;
+
+            // remember my choice (only after success)
+            myChoice = Number(optionId);
+            myVotes  = { ...myVotes, [pollData.id]: myChoice };
             saveUserVotes(user.userId, myVotes);
+
         } catch (e) {
             alert(e.message || "Vote failed");
+        } finally {
+            voteSending = false;
         }
-        console.log("POST", `http://localhost:8080/poll/${pollData.id}/vote`, {
-            userId: user.userId,
-            voteOptionID: optionId
-        });
+
+        console.log("pollData after load", pollData);
+        console.log("voting", { pollId: pollData?.id, optionId, userId: user?.userId });
+
     }
+
 
 
     async function changeVote(newOptionId) {
