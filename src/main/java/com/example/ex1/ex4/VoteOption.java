@@ -1,18 +1,22 @@
 package com.example.ex1.ex4;
 
-public class VoteOption {
-    private final String caption;
-    private final int presentationOrder; // 0-based, used in tests
-    private final Poll poll;
+import jakarta.persistence.*;
 
-    VoteOption(String caption, Poll poll, int presentationOrder) {
-        this.caption = caption;
-        this.poll = poll;
-        this.presentationOrder = presentationOrder;
+@Entity(name="VoteOption")
+public class VoteOption {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @Column(nullable=false) private String caption;
+    @Column(nullable=false) private int presentationOrder;
+
+    @ManyToOne(optional=false) @JoinColumn(name="poll_id")
+    private Poll poll;
+
+    protected VoteOption() {}
+    VoteOption(String caption, Poll poll, int order){
+        this.caption=caption; this.poll=poll; this.presentationOrder=order;
     }
 
-    // getters used by queries/tests
-    public String getCaption() { return caption; }
-    public int getPresentationOrder() { return presentationOrder; }
-    public Poll getPoll() { return poll; }
+    public String getCaption(){ return caption; }
+    public int getPresentationOrder(){ return presentationOrder; }
+    public Poll getPoll(){ return poll; }
 }

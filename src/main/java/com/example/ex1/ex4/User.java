@@ -1,41 +1,22 @@
 package com.example.ex1.ex4;
 
-import java.util.LinkedHashSet;
+import jakarta.persistence.*;
 
+@Entity(name = "User")          // so JPQL 'from User' works
+@Table(name = "users")          // test runs native query on 'users'
 public class User {
-    private final String username;
-    private final String email;
-    LinkedHashSet<String> created;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    /**
-     * Creates a new User object with given username and email.
-     * The id of a new user object gets determined by the database.
-     */
-    public User(String username, String email) {
-        this.username = username;
-        this.email = email;
-        this.created = new LinkedHashSet<>();
-    }
+    @Column(nullable=false, unique=true) private String username;
+    @Column(nullable=false, unique=true) private String email;
 
-    /**
-     * Creates a new Poll object for this user
-     * with the given poll question
-     * and returns it.
-     */
-    public Poll createPoll(String question) {
-        created.add(question);
-        return new Poll(question, this);
-    }
+    protected User() {}           // JPA needs no-args ctor
+    public User(String username, String email) { this.username=username; this.email=email; }
 
-    /**
-     * Creates a new Vote for a given VoteOption in a Poll
-     * and returns the Vote as an object.
-     */
-    public Vote voteFor(VoteOption option) {
-        return new Vote(this, option);
-    }
+    public Poll createPoll(String question){ return new Poll(question, this); }
+    public Vote voteFor(VoteOption option){ return new Vote(this, option); }
 
-    // getters used by queries/tests
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
+    public String getUsername(){ return username; }
+    public String getEmail(){ return email; }
 }

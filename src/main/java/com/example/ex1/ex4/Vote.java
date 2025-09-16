@@ -1,15 +1,19 @@
 package com.example.ex1.ex4;
 
+import jakarta.persistence.*;
+
+@Entity(name="Vote")
 public class Vote {
-    private final User votedBy;
-    private final VoteOption votesOn;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
 
-    public Vote(User votedBy, VoteOption votesOn) {
-        this.votedBy = votedBy;
-        this.votesOn = votesOn;
-    }
+    @ManyToOne(optional=false) @JoinColumn(name="voted_by_id")
+    private User votedBy;
 
-    // getters used by queries/tests
-    public User getVotedBy() { return votedBy; }
-    public VoteOption getVotesOn() { return votesOn; }
+    @ManyToOne(optional=false) @JoinColumn(name="option_id")
+    private VoteOption votesOn;
+
+    protected Vote() {}
+    public Vote(User votedBy, VoteOption votesOn){ this.votedBy=votedBy; this.votesOn=votesOn; }
+
+    public VoteOption getVotesOn(){ return votesOn; }
 }

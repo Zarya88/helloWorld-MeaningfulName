@@ -1,27 +1,28 @@
 package com.example.ex1.ex4;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
+import java.util.ArrayList; import java.util.List;
 
+@Entity(name="Poll")
 public class Poll {
-    private final String question;
-    private final User createdBy;
-    private final List<VoteOption> options = new ArrayList<>();
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @Column(nullable=false) private String question;
 
-    public Poll(String question, User createdBy) {
-        this.question = question;
-        this.createdBy = createdBy;
+    @ManyToOne(optional=false) @JoinColumn(name="created_by_id")
+    private User createdBy;
+
+    @OneToMany(mappedBy="poll", cascade=CascadeType.ALL, orphanRemoval=true)
+    private List<VoteOption> options = new ArrayList<>();
+
+    protected Poll() {}
+    public Poll(String question, User createdBy){ this.question=question; this.createdBy=createdBy; }
+
+    public VoteOption addVoteOption(String caption){
+        VoteOption o = new VoteOption(caption, this, options.size());
+        options.add(o);
+        return o;
     }
 
-    /** Adds an option; its presentationOrder is the index at insertion time (0,1,2,...) */
-    public VoteOption addVoteOption(String caption) {
-        VoteOption opt = new VoteOption(caption, this, options.size());
-        options.add(opt);
-        return opt;
-    }
-
-    // getters used by queries/tests
-    public String getQuestion() { return question; }
-    public User getCreatedBy() { return createdBy; }
-    public List<VoteOption> getOptions() { return options; }
+    public User getCreatedBy(){ return createdBy; }
+    public List<VoteOption> getOptions(){ return options; }
 }
