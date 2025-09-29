@@ -1,14 +1,17 @@
+You will find the following relevant files:
+- RedisConfig.java : src/main/java/com/example/ex1/repo/RedisConfig.java
+- new Main : src\main\java\com\example\ex1\ex5
+- a "new" version of PollManager (for jedis specificly) : // src/main/java/com/example/ex1/ex5/PollManager.java
 Technical problems:
-
-&nbsp;- no technical issues during installation (besides my own confusion)
-
-&nbsp;- use of Mongo DB: to be updated
-
-&nbsp;- resolved issues: pending
-
-
+- no technical issues during installation (besides my own confusion)
+- use of Mongo DB: to be updated
+- resolved issues: pending
+- issues during implementation: 
+  - utter confusion;
+  - understanding of what the assignment wants from me
+  - is anything supposed to work?
 
 Any pending issues with this assignment:
-
-&nbsp;- the assignment part
+- my own understanding
+- this code runs on gods will, hopes and prayers
 
