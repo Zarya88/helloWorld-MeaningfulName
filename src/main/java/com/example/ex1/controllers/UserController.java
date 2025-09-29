@@ -2,7 +2,7 @@ package com.example.ex1.controllers;
 
 import com.example.ex1.dto.CreateUserRequest;
 import com.example.ex1.model.User;
-import com.example.ex1.repo.PollManager;
+import com.example.ex1.repo.OLD.OLDPollManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -10,10 +10,10 @@ import java.util.HashMap;
 @RestController
 @CrossOrigin
 public class UserController {
-    private final PollManager manager;
+    private final OLDPollManager manager;
 
     public UserController() {
-        this.manager = new PollManager();
+        this.manager = new OLDPollManager();
     }
 
     @PostMapping("/user/create")

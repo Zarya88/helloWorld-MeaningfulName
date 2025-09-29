@@ -1,9 +1,8 @@
 package com.example.ex1.controllers;
 
 import com.example.ex1.dto.SubmitVoteRequest;
-import com.example.ex1.model.User;
 import com.example.ex1.model.Vote;
-import com.example.ex1.repo.PollManager;
+import com.example.ex1.repo.OLD.OLDPollManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,9 +13,9 @@ import java.util.Map;
 @CrossOrigin
 @RestController
 public class VoteController {
-    private final PollManager manager;
+    private final OLDPollManager manager;
 
-    public VoteController(PollManager manager) {
+    public VoteController(OLDPollManager manager) {
         this.manager = manager;
     }
 

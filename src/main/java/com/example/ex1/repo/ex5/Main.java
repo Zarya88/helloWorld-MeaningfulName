@@ -1,4 +1,4 @@
-package com.example.ex1.ex5;
+package com.example.ex1.repo.ex5;
 
 import redis.clients.jedis.UnifiedJedis;
 

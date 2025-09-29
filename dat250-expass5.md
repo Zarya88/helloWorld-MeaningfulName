@@ -14,4 +14,4 @@ Technical problems:
 Any pending issues with this assignment:
 - my own understanding
 - this code runs on gods will, hopes and prayers
-
+- how tf do I even test this
