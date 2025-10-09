@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.rabbitmq:amqp-client:5.20.0") //assignment6
     implementation("redis.clients:jedis:6.2.0") //assignment5
     implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
     implementation("org.hibernate.orm:hibernate-core:7.1.1.Final")

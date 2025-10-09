@@ -2,7 +2,9 @@ package com.example.ex1.controllers;
 import com.example.ex1.dto.CreatePollRequest;
 import com.example.ex1.model.Poll;
 import com.example.ex1.repo.OLD.OLDPollManager;
+import com.example.ex1.repo.ex6.PollManager;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,9 +15,9 @@ import java.util.Map;
 @CrossOrigin
 @RestController
 public class PollController {
-    private final OLDPollManager manager;
+    private final PollManager manager;
 
-    public PollController(OLDPollManager manager) {
+    public PollController(PollManager manager) {
         this.manager = manager;
     }
 
@@ -50,5 +52,18 @@ public class PollController {
         manager.deletePoll(pollId);
     }
 
+
+    //ex6
+    @PostMapping("/polls/{pollId}/vote")
+    public ResponseEntity<?> vote(
+            @PathVariable int pollId,
+            @RequestParam int optionId,
+            @RequestParam(required = false) Integer userId // may be null for anonymous
+    ) {
+        // Event-first write:
+        manager.publishVoteEvent(pollId, optionId, userId);
+        // The subscriber will apply state + invalidate cache.
+        return ResponseEntity.accepted().body(Map.of("status", "published"));
+    }
 
 }

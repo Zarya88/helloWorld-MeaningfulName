@@ -1,4 +1,4 @@
-package com.example.ex1.repo.ex5;
+package com.example.ex1.repo.ex6;
 
 import com.example.ex1.model.Poll;
 import com.example.ex1.model.User;
@@ -7,12 +7,15 @@ import com.example.ex1.model.VoteOption;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.*;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class PollManager {
@@ -26,12 +29,18 @@ public class PollManager {
     public int voteOptionCounter;
     public HashMap<Integer, VoteOption> listVoteOptions  = new HashMap<>();
 
-    //ex5
+    // --- ex5: cache + pub/sub ---
     private final JedisPool pool;
     private final ObjectMapper om = new ObjectMapper();
-    private final int TTL_SECONDS = 120; // choose what you like
+    private final int TTL_SECONDS = 120;
 
-    // Spring injects JedisPool
+    private ExecutorService subscriberExecutor;
+    private volatile boolean running = true;
+
+    //ex6
+    private Jedis subscriberConn; //connection for psubscribe
+    private JedisPubSub subscriber;
+
     public PollManager(JedisPool pool) {
         this.pool = pool;
         this.userCounter = 1;
@@ -40,11 +49,49 @@ public class PollManager {
         this.voteOptionCounter = 1;
     }
 
-    private static String cacheKey(int pollId) {
-        return "poll:" + pollId + ":view";        // e.g. poll:42:view
+    // -------- cache keys / channels ----------
+    private static String cacheKey(int pollId) { return "poll:" + pollId + ":view"; }
+    private static String channel(int pollId)   { return "poll:" + pollId; }          // topic per poll
+    private static String channelPattern()      { return "poll:*"; }                   // subscribe to all polls
+
+
+    @PostConstruct
+    public void startSubscriber() {
+        subscriber = new JedisPubSub() {
+            @Override
+            public void onPMessage(String pattern, String ch, String msg) {
+                // handle message...
+            }
+        };
+
+        subscriberExecutor = Executors.newSingleThreadExecutor();
+        subscriberExecutor.submit(() -> {
+            try {
+                subscriberConn = pool.getResource();
+                subscriberConn.psubscribe(subscriber, channelPattern());
+            } catch (Exception e) {
+                if (running) e.printStackTrace();
+            }
+        });
     }
 
-    // ---------------------- (unchanged) ----------------------
+    @PreDestroy
+    public void stopSubscriber() {
+        running = false;
+        try {
+            if (subscriber != null) {
+                try { subscriber.punsubscribe(); } catch (Exception ignored) {}
+            }
+            if (subscriberConn != null) {
+                subscriberConn.close();
+            }
+        } catch (Exception ignored) {}
+        if (subscriberExecutor != null) subscriberExecutor.shutdownNow();
+    }
+
+
+
+    // ============== (unchanged) ==============
 
     public User createUser(String username, String email) {
         User user = new User(this.userCounter, username, email);
@@ -67,6 +114,7 @@ public class PollManager {
             voteOptions.add(voteOptionCounter);
             this.voteOptionCounter++;
         }
+        // no explicit "topic creation" needed for Redis; first publish will create the channel implicitly
         this.pollCounter++;
         return poll;
     }
@@ -74,12 +122,13 @@ public class PollManager {
     public List<Poll> getPolls() { return listPolls.values().stream().toList(); }
     public void deletePoll(int pollId) { listPolls.remove(pollId); invalidateCache(pollId); }
 
+    // NOTE: leave these methods for direct (non-event) writes if you need them internally,
+    // but prefer publishing an event and letting the subscriber apply state.
     public Vote createVote(int userId, int voteOptID, Instant publishedAt) {
         Vote vote = new Vote(userId, this.voteCounter, voteOptID, publishedAt);
         listVotes.put(this.voteCounter, vote);
         this.voteCounter++;
 
-        // Invalidate the affected poll in cache
         Integer pollId = findPollIdByVoteOption(voteOptID);
         if (pollId != null) invalidateCache(pollId);
 
@@ -103,7 +152,6 @@ public class PollManager {
 
     public List<Vote> showAllVotes(){ return listVotes.values().stream().toList(); }
 
-    // Build the Map that your controllers return (existing logic)
     public Map<String, Object> pollView(int pollId) {
         var p = listPolls.get(pollId);
         if (p == null) return null;
@@ -131,9 +179,8 @@ public class PollManager {
         return out;
     }
 
-    // ---------------------- ex5: caching wrappers ----------------------
+    // ---------------------- cache wrappers ----------------------
 
-    /** Read-through cache: returns pollView from Redis if present, else computes & caches it. */
     public Map<String, Object> pollViewCached(int pollId) {
         String key = cacheKey(pollId);
         try (Jedis jedis = pool.getResource()) {
@@ -141,26 +188,22 @@ public class PollManager {
             if (json != null) {
                 return om.readValue(json, new TypeReference<Map<String,Object>>(){});
             }
-            // Miss → compute & cache
             Map<String, Object> view = pollView(pollId);
             if (view != null) {
                 jedis.setex(key, TTL_SECONDS, om.writeValueAsString(view));
             }
             return view;
         } catch (Exception e) {
-            // If Redis fails, fall back to computing directly
             return pollView(pollId);
         }
     }
 
-    // invalidate cache after mutations (new vote, delete poll, etc.)
     public void invalidateCache(int pollId) {
         try (Jedis jedis = pool.getResource()) {
             jedis.del(cacheKey(pollId));
         } catch (Exception ignored) {}
     }
 
-    //find which poll contains a given voteOption id
     private Integer findPollIdByVoteOption(int voteOptId) {
         for (var entry : listPolls.entrySet()) {
             if (entry.getValue().options.contains(voteOptId)) {
@@ -168,5 +211,44 @@ public class PollManager {
             }
         }
         return null;
+    }
+
+    // ===================== Pub/Sub API =====================
+
+    /** Publish a vote event to the poll’s channel. userId may be null for anonymous. */
+    public void publishVoteEvent(int pollId, int optionId, Integer userId) {
+        Map<String, Object> evt = new HashMap<>();
+        evt.put("type", "vote");
+        evt.put("pollId", pollId);
+        evt.put("optionId", optionId);
+        evt.put("userId", userId); // can be null
+        evt.put("ts", Instant.now().toString());
+
+        try (Jedis j = pool.getResource()) {
+            j.publish(channel(pollId), om.writeValueAsString(evt));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to publish vote event", e);
+        }
+    }
+
+    /** Apply vote event locally (invoked by subscriber). */
+    private void applyVoteEvent(Integer pollId, Integer optionId, Integer maybeUserId) {
+        if (pollId == null || optionId == null) return;
+        // Validate that option belongs to poll
+        Poll p = listPolls.get(pollId);
+        if (p == null || !p.options.contains(optionId)) return;
+
+        int userId = (maybeUserId == null ? 0 : maybeUserId); // 0 = anonymous
+        // If user already voted, replace; else create
+        Optional<Vote> existing = listVotes.values().stream().filter(v -> v.userId == userId).findFirst();
+        if (existing.isPresent()) {
+            Vote v = existing.get();
+            Vote updated = new Vote(userId, v.voteID, optionId, Instant.now());
+            listVotes.put(v.voteID, updated);
+        } else {
+            Vote v = new Vote(userId, this.voteCounter, optionId, Instant.now());
+            listVotes.put(this.voteCounter, v);
+            this.voteCounter++;
+        }
     }
 }
